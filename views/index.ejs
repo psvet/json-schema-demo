@@ -1,0 +1,376 @@
+<!doctype html>
+<html>
+  <head>
+    <title>JSON Schema Validation</title>
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700|Yanone+Kaffeesatz:400,700|Open+Sans:400,700,400italic);
+      
+      body { 
+        font-family: 'Open Sans';
+      }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code {
+        font-family: 'Ubuntu Mono';
+        font-size: 22px;
+      }
+      a { text-decoration: none; }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+      class: middle, center
+
+      # JSON Schema Validation
+      ## ContainerNode Lighting Talk
+      ### September 15, 2015
+
+      **Peter Svetlichny**   |   @p_svetlichny
+
+      ---
+
+      # JSON
+
+      - Lightweight, language-independent data exchange format
+
+      --
+
+      - Easy for both humans and machines to use
+
+      --
+
+      - Very similar to JavaScript objects (**J**ava**S**cript **O**bject **N**otation)
+
+      --
+
+        - Unordered lists of key-value pairs
+
+      --
+
+        - Value can be any valid type
+            - *not* `undefined`
+      --
+
+      - Follows strict format rules
+
+      --
+
+        - All strings **must** be inside double quotes (""), including keys
+
+      ---
+
+      ### Valid JSON:
+      ```
+      {
+         "id": 1,
+         "name": "Colby",
+         "species": "Dog",
+         "age": 5,
+         "breed": ["Lab", "Shepherd", "Pit"]
+      }
+      ```
+
+      --
+
+      - Only concerned with enforcing format, **not** structure or content
+
+      ---
+
+      ### Valid JSON:
+      ```
+      {
+         "id": 1,
+         "name": "Colby",
+         "species": "Dog",
+         "age": 5,
+         "breed": ["Lab", "Shepherd", "Pit"]
+      }
+      ```
+      ### Also valid, and conveys similar information:
+      ```
+      {
+        "id": "1",
+        "name": "Colby",
+        "type": "dog",
+        "description": {
+          "age": "5 years",
+          "mix": true,
+          "breed": ["Lab", "Shepherd", "Pit"]
+        }
+      }
+      ```
+
+      ---
+
+      ## Standardizing project-specific data requirements
+
+      --
+
+      - Documentation
+
+      ---
+      ## Standardizing project-specific data requirements
+
+      - Documentation (never a bad thing!)
+        - provides developers clear explanation of public APIs to successfully exchange data with apps like Facebook or Twitter
+      --
+
+      - JSON Schema
+
+      ---
+
+      # JSON Schema
+
+      --
+
+      - Standardized tool for defining rules regarding the structure or content of JSON data.
+
+      --
+
+      - Written in JSON
+
+      ---
+
+      ### Preferred JSON data structure
+
+      ```
+      {
+        "id": 1,
+        "name": "Colby",
+        "species": "Dog",
+        "description": {
+           "age": 5,
+           "mix": true,
+           "breed": ["Lab", "Shepherd", "Pit"]
+         }
+      }
+      ```
+
+      ---
+
+      ### JSON Schema for Pet data
+
+      ```
+      {
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10
+          },
+          "species": {
+            "type": "string"
+          },
+          "description": {
+            "type": "object",
+            "properties": {
+              "age": {
+                "type": "integer"
+              },
+              "mix": {
+                "type": "boolean"
+              },
+      ```
+
+      ---
+
+      ```
+              "breed": {
+                "type": ["string", "array"]
+              }
+            }
+          }
+        },
+        "required": ["id", "name", "description"],
+        "additionalProperties": false
+      }
+      ```
+
+      ---
+
+      ## Validation *Keywords* used:
+      - `type`
+
+      --
+
+      - Object-specific keywords:
+        - `properties`
+        - `required`
+        - `additionalProperties`
+
+      --
+
+      - String-specific keywords:
+        - `minLength`
+        - `maxLength`
+
+      --
+
+      ### http://json-schema.org/latest/json-schema-validation.html
+
+      --
+
+      ### http://jsonschemalint.com
+
+      ---
+
+      ## Alternative ways to create JSON Schema
+
+      --
+      ### Benefits:
+
+      --
+
+      - Not writing *more* JSON
+
+      --
+
+      - no double quotes
+        - YAML alleviated this, but also...
+
+      --
+      
+      - no strict formatting
+
+      --
+        - (Technically poorly formatted JSON is still valid, but... just don't.)
+
+      ---
+
+      ## JSON Schema Builder
+
+      Fluent JavaScript API for generating valid JSON Schema
+
+      http://github.com/atomiqio/json-schema-builder
+
+      --
+
+      ```
+
+      ```
+
+      `npm install json-schema-builder`
+
+      ---
+
+      ```javascript
+      const jsb = require('json-schema-builder');
+
+      let schema = jsb.schema()
+                      .property('id', jsb.integer(), true)
+                      .property('name', jsb.string(), true)
+                      .property('species', jsb.string()
+                                            .minLength(1)
+                                            .maxLength(10))
+                      .property('description'
+                                 , jsb.object()
+                                   .property('age', jsb.integer())
+                                   .property('mix', jsb.boolean())
+                                   .property('breed',
+                                        jsb.type(['string', 'array']))
+                                 , true)
+                      .additionalProperties(false);
+
+      // Generate schema object to be used or persisted however desired
+      let doc = schema.json();
+      ```
+
+      ---
+       **Equivalent, with async save:**
+
+      ```javascript
+      const jsb = require('json-schema-builder');
+
+      let schema = jsb.schema();
+
+      schema
+        .properties({
+           id: jsb.integer(),
+           name: jsb.string(),
+           species: jsb.string().minLength(1).maxLength(10),
+           description: jsb.object()
+                           .properties({
+                               age: jsb.integer(),
+                               mix: jsb.boolean(),
+                               breed: jsb.type(['string', 'array'])
+                           })
+        })
+        .required(['id', 'name', 'description'])
+        .additionalProperties(false);
+
+      let filepath = 'schema.json';
+      schema.save(filepath, (err) => {
+        if (err) throw err;
+
+        console.log(`Schema saved to ${filepath}!`);
+      });
+      ```
+
+      ---
+
+      ## Phase
+
+      Domain-specific language (DSL) for creating JSON Schema
+
+      http://github.com/atomiqio/phase
+
+      --
+
+      - Easy to read
+
+      --
+
+      - Easy to write
+      
+        - Flexible whitespace
+      
+        - Quotes (single **or** double) only required for function arguments
+
+      ---
+      ### Phase example
+
+      ```
+      {
+        id integer @required
+        name string @required
+        species string @minLength(1) @maxLength(10)
+        description {
+          age integer
+          mix boolean
+          breed [string, array]
+        } @required
+        @additionalProperties(false)
+      }
+      ```
+      ---
+      # More information
+
+      **Official JSON Schema documentation:**
+
+      http://json-schema.org
+
+      **Understanding JSON Schema Ebook:**
+
+      http://spacetelescope.github.io/understanding-json-schema/index.html
+
+      **JSON Schema Builder documentation:**
+      
+      http://github.com/atomiqio/json-schema-builder
+
+      **Phase:** (soon)
+      
+      http://github.com/atomiqio/phase
+
+      ### <span class='center'>linkedin.com/in/psvet  ||  @p_svetlichny</span>
+    </textarea>
+    <script src='https://gnab.github.io/remark/downloads/remark-latest.min.js'></script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>

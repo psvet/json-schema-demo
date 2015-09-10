@@ -1,0 +1,16 @@
+{
+  "name": "json-schema-demo",
+  "version": "0.0.1",
+  "description": "JSON Schema Validation presentation slides",
+  "scripts": {
+    "demo": "node demo.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ejs": "^2.3.4",
+    "express": "^4.13.3",
+    "json-schema-builder": "^0.0.5",
+    "open": "0.0.5"
+  },
+  "author": "Peter Svetlichny"
+}
