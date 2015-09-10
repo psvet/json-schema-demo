@@ -10,7 +10,8 @@
     "ejs": "^2.3.4",
     "express": "^4.13.3",
     "json-schema-builder": "^0.0.5",
-    "open": "0.0.5"
+    "open": "0.0.5",
+    "z-schema": "^3.13.0"
   },
   "author": "Peter Svetlichny"
 }
